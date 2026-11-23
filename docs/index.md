@@ -7,6 +7,7 @@ with a Debug Adapter Protocol (DAP) implementation.  In addition to Python,
 - C, C++, Fortran (via `gdb` or `lldb-dap`)
 - Rust (via `gdb` or `lldb-dap`, selected explicitly)
 - Perl (via `perl -d`)
+- Raku (via [Nimala](https://raku.land/zef:kliklamala/Nimala::Raku-LSP)'s `nimala-raku-dap`)
 - Bash (via bash's own `DEBUG` trap; bash ≥ 4.4)
 - Tcsh (via source instrumentation of a stock `tcsh`)
 - Ruby (via the [debug gem](https://github.com/ruby/debug)'s `rdbg`; debug ≥ 1.9)
@@ -32,7 +33,7 @@ MIT License.  Copyright 2026 by Al Danial.
 
 - debugs multiple languages through the Debug Adapter Protocol: Python (via `debugpy`,
 the richest feature set); C/C++ and Fortran (via `gdb -i dap` or `lldb-dap`); Rust (via `gdb` or
-`lldb-dap`); Perl (via `perl -d`);
+`lldb-dap`); Perl (via `perl -d`); Raku (via Nimala's `nimala-raku-dap`);
 Bash (via bash's own `DEBUG` trap); Tcsh (via source instrumentation of a
 stock `tcsh`); Ruby (via the debug gem's `rdbg`); OCaml (native via
 `lldb-dap`/`gdb`, bytecode via ocamlearlybird); Go (via Delve's `dlv

@@ -81,6 +81,7 @@
          "examples/Go/*.go", "examples/Go/breakpoint_hook_demo/go.mod",
          "examples/Go/breakpoint_hook_demo/*.go", "examples/OCaml/*.ml",
          "examples/Perl/*.pl", "examples/PowerShell/*.ps1", "examples/Python/*.py",
+         "examples/Raku/*.raku",
          "examples/Ruby/*.rb", "examples/Rust/*.rs",
          "examples/Rust/breakpoint_hook_demo/Cargo.toml",
          "examples/Rust/breakpoint_hook_demo/src/*.rs", "examples/bash/*.sh",

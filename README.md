@@ -7,6 +7,7 @@ with a Debug Adapter Protocol (DAP) implementation.  In addition to Python,
 - C, C++, Fortran (via `gdb` or `lldb-dap`)
 - Rust (via `gdb` or `lldb-dap`, selected explicitly)
 - Perl (via `perl -d`)
+- Raku (via [Nimala](https://raku.land/zef:kliklamala/Nimala::Raku-LSP)'s `nimala-raku-dap`)
 - Bash (via bash's own `DEBUG` trap; bash ≥ 4.4)
 - Tcsh (via source instrumentation of a stock `tcsh`)
 - Ruby (via the [debug gem](https://github.com/ruby/debug)'s `rdbg`; debug ≥ 1.9)
@@ -73,7 +74,7 @@ tdb my_program.py arg1 arg2      # debug a Python program (stops at the first li
 tdb -k 20 -k module.py:14 my_program.py   # run to breakpoints
 tdb -k module.py:27 --if "a > 7" my_program.py   # ... stopping only when a > 7
 tdb ./myprog                     # debug a native executable built with -g
-tdb script.pl                    # ... or a Perl, Bash, Tcsh, Ruby, PowerShell script
+tdb script.pl                    # ... or a Perl, Raku, Bash, Tcsh, Ruby, PowerShell script
 tdb -a 12345                     # attach to a running Python program by PID
 tdb -r remotehost:5678           # attach to a remote debugpy server
 ```

@@ -25,6 +25,8 @@ from tdb.languages import native_tools as nt
         ("/home/me/go/bin/dlv", "dlv"),
         ("C:\\Users\\me\\go\\bin\\dlv.exe", "dlv"),
         ("/usr/bin/dlv-dap", "dlv"),
+        ("/usr/local/bin/nimala-raku-dap", "nimala-raku-dap"),
+        ("/home/me/nimala-raku-dap-1.0.2", "nimala-raku-dap"),
         ("/usr/bin/lldb", None),
         ("/usr/bin/mygdb", None),
     ],

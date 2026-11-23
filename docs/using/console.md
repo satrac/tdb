@@ -13,10 +13,10 @@ when the session has no stdin to feed.
 
 Stdin forwarding works for the languages whose program `tdb` launches on a
 pipe it owns: Python, Perl, Bash, Tcsh, Ruby, and PowerShell. It is not
-available for the compiled languages — C/C++/Fortran, Rust, OCaml, and Go — because
-their adapters (`gdb -i dap`, `lldb-dap`, `dlv dap`) spawn the debuggee
-themselves and give `tdb` no handle on its stdin; the input line stays
-hidden there. It is also unavailable for remote attach (`-r`), where the
+available for the compiled languages — C/C++/Fortran, Rust, OCaml, and Go — and
+for Raku, because their adapters (`gdb -i dap`, `lldb-dap`, `dlv dap`,
+`nimala-raku-dap`) spawn the debuggee themselves and give `tdb` no handle on
+its stdin; the input line stays hidden there. It is also unavailable for remote attach (`-r`), where the
 program's stdin belongs to whoever started it, and under `--terminal`,
 where the program reads from its own terminal window. For those cases run
 the program in an external terminal with `--terminal` (launch mode only),

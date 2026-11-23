@@ -14,11 +14,12 @@ class AdapterClient:
         self.on_reverse_request = None
         self._reverse_tasks: set = set()
 
-    async def start(self, module: str = "tdb.adapters.perl"):
+    async def start(
+        self, module: str = "tdb.adapters.perl", *, cmd: list[str] | None = None
+    ):
+        argv = cmd or [sys.executable, "-m", module]
         self.proc = await asyncio.create_subprocess_exec(
-            sys.executable,
-            "-m",
-            module,
+            *argv,
             stdin=asyncio.subprocess.PIPE,
             stdout=asyncio.subprocess.PIPE,
             stderr=asyncio.subprocess.PIPE,

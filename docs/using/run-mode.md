@@ -87,7 +87,7 @@ nonzero `sys.exit()`, which `debugpy` treats as an uncaught `SystemExit` -- `tdb
 the TUI at the point of failure instead of exiting silently, so you can inspect the
 crash. Exit-code passthrough applies only to a clean exit during the headless phase.
 
-Supported languages: Python, Perl, Bash, Tcsh, Ruby, PowerShell 7, C/C++/Fortran
+Supported languages: Python, Perl, Raku, Bash, Tcsh, Ruby, PowerShell 7, C/C++/Fortran
 (both `gdb` and `lldb-dap`), and native OCaml (both `gdb` and `lldb-dap`;
 bytecode/`ocamlearlybird` sessions don't support pause, so `--run` is
 unavailable for those). `--run` is rejected up front for any other

@@ -1,6 +1,6 @@
 # Multi-Language Debugging
 
-`tdb` debugs any language that has a Debug Adapter Protocol backend. Ten
+`tdb` debugs any language that has a Debug Adapter Protocol backend. Eleven
 languages are supported out of the box:
 
 | Language | Adapter(s) | Dependencies           | Feature level |
@@ -9,6 +9,7 @@ languages are supported out of the box:
 | C / C++ / Fortran (any native binary) | `gdb` (default), `lldb-dap` (alternate) | `gdb -i dap` requires GDB ≥ 14 built with Python (RHEL 8/9: `dnf install gcc-toolset-14-gdb`, see [C/C++/Fortran](c-cpp-fortran.md)); `lldb-dap` ships with LLVM ≥ 17 (e.g. `apt install lldb`) | core debugging: breakpoints, stepping, stack, variables, evaluate console + remote attach (gdbserver/lldb-server, local symbol-bearing executable required) |
 | Rust (explicit `--lang rust`) | `gdb` (Linux default), `lldb-dap` (macOS default) | any rustc building with debug info; GDB ≥ 14 or LLVM `lldb-dap` ≥ 17 (concurrency ownership evidence additionally requires stable Rust 1.98) | core debugging + best-effort Rust concurrency inspection + remote attach |
 | Perl | perl-tdb (bundled) | perl ≥ 5.18 on PATH  | core debugging + remote attach |
+| Raku | `nimala-raku-dap` ([Nimala](https://raku.land/zef:kliklamala/Nimala::Raku-LSP)) | Rakudo (tested with 2026.09) and `nimala-raku-dap` on PATH | core debugging + `--run`/`--terminal`; launch only, no attach |
 | Bash | bash-tdb (bundled) | bash ≥ 4.4 on PATH  | core debugging (no remote attach) |
 | Tcsh | tcsh-tdb (bundled) | tcsh on PATH | core debugging (no remote attach, no conditional breakpoints, no pause) |
 | Ruby | `rdbg` (the [debug gem](https://github.com/ruby/debug)) | `rdbg` ≥ 1.9 on PATH | core debugging + remote attach |
@@ -24,9 +25,11 @@ The language is auto-detected from the debug target:
 1. A directory → Go, if it contains any `*.go` file (a Go package
    directory, e.g. `tdb ./pkg`); otherwise an error naming `--lang`.
 2. File extension: `.py` → Python; `.go` → Go; `.pl` / `.pm` / `.t` → Perl;
-   `.sh` / `.bash` → Bash; `.csh` / `.tcsh` → Tcsh; `.rb` → Ruby; `.ps1` /
-   `.psm1` → PowerShell. (`.ml` / `.mli` do *not* auto-select OCaml, see
-   point 6.)
+   `.raku` / `.rakumod` / `.rakudoc` / `.rakutest` / `.p6` / `.pm6` / `.pl6` /
+   `.t6` → Raku; `.sh` / `.bash` → Bash; `.csh` / `.tcsh` → Tcsh; `.rb` →
+   Ruby; `.ps1` / `.psm1` → PowerShell. A `.t` file whose shebang names
+   `raku`/`perl6`, or which contains `use v6`, is treated as Raku instead of
+   Perl. (`.ml` / `.mli` do *not* auto-select OCaml, see point 6.)
 3. Native executables (ELF, Mach-O, PE magic bytes) → C/C++/Fortran, unless
    byte-checking finds an OCaml marker (a native binary's
    `caml_program`/`caml_startup` runtime symbols, a bytecode file's
@@ -38,9 +41,9 @@ The language is auto-detected from the debug target:
    identify falls back to C/C++/Fortran; force it with `--lang ocaml` or `--lang
    go` respectively. Rust is never inferred from an executable; select it
    explicitly with `--lang rust`.
-4. A `#!...python`, `#!...perl`, `#!...bash`, `#!...csh`/`#!...tcsh`,
-   `#!...ruby`, or `#!...pwsh` shebang → Python / Perl / Bash / Tcsh / Ruby /
-   PowerShell respectively.
+4. A `#!...python`, `#!...perl`, `#!...raku`/`#!...perl6`, `#!...bash`,
+   `#!...csh`/`#!...tcsh`, `#!...ruby`, or `#!...pwsh` shebang → Python /
+   Perl / Raku / Bash / Tcsh / Ruby / PowerShell respectively.
 5. C/C++/Fortran/Rust *source* files (`.c`, `.cpp`, `.rs`, …) produce an error with a
    hint: compile with debug info (`g++ -g -O0`) and debug the binary.
 6. `.ml` / `.mli` (OCaml source) produce an error too: build the project
@@ -108,16 +111,16 @@ programs by nature). Remote attach (`-r`) also works for Perl (see
 [Go](go.md), `dlv dap --listen` in place of `debugpy.listen()`), and for
 Rust and C/C++/Fortran native binaries (against a gdbserver/lldb-server stub, with
 a local symbol-bearing executable; see [Rust](rust.md) — the same flags work
-for a C/C++/Fortran target without `--lang`), but not for Bash, Tcsh, OCaml, or
-PowerShell. `--terminal` works for every launch-mode
-language — Python, Perl, Bash, Tcsh, Ruby, and C/C++/Fortran, OCaml native, or Rust
-sessions via `--adapter lldb-dap` — see
+for a C/C++/Fortran target without `--lang`), but not for Raku, Bash, Tcsh,
+OCaml, or PowerShell. `--terminal` works for every launch-mode
+language — Python, Perl, Raku, Bash, Tcsh, Ruby, and C/C++/Fortran, OCaml native,
+or Rust sessions via `--adapter lldb-dap` — see
 [External Terminal Support](../using/external-terminal.md). Go and PowerShell do
 not support `--terminal` yet (`dlv dap` and PSES have no terminal-routing
 mode). Typing into the Console view to feed the program's stdin works for
 Python, Perl, Bash, Tcsh, Ruby, and PowerShell, but not for C/C++/Fortran, Rust,
-OCaml, or Go, whose adapters spawn the debuggee themselves — see
-[Console Output and Input](../using/console.md).
+OCaml, Go, or Raku without `--terminal`, whose adapters spawn the debuggee
+themselves — see [Console Output and Input](../using/console.md).
 
 **Bash limitations (v1):** the bash adapter uses bash's own `DEBUG` trap and
 has a smaller feature set than Python:

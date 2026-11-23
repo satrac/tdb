@@ -42,7 +42,7 @@ faster than before.
 ## Standard input
 
 Terminal input is forwarded to the program for Python, Perl, Bash, tcsh,
-Ruby and PowerShell. It is not available for C, C++, Rust, Go and OCaml,
+Ruby and PowerShell. It is not available for C, C++, Rust, Go, OCaml, and Raku,
 the same as in the TUI's console (see [Console Output and Input](console.md)).
 
 ## Ctrl-C

@@ -53,6 +53,11 @@ def test_tool_sections_show_path_and_version(stub_tools):
         "    lldb-dap                 : /stub/lldb-dap",
         "    version                  : 99.2.3",
     ]
+    assert _section(text, "Raku").splitlines() == [
+        "    raku executable          : /stub/raku",
+        "    version                  : 99.2.3",
+        "    nimala-raku-dap          : /stub/nimala-raku-dap",
+    ]
     assert _section(text, "Ruby").splitlines() == [
         "    ruby executable          : /stub/ruby",
         "    version                  : 99.2.3",

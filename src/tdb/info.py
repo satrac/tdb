@@ -168,6 +168,20 @@ def perl_rows(adapter_paths: dict[str, str | None] | None) -> list[str]:
     return rows
 
 
+def raku_rows(adapter_paths: dict[str, str | None] | None) -> list[str]:
+    """The Raku section: the interpreter, then Nimala's DAP server.
+
+    ``nimala-raku-dap`` has no ``--version`` mode (starting it opens the
+    DAP loop), so it gets a path-only row.
+    """
+    from tdb.languages import native_tools as nt
+
+    rows = tool_rows("raku executable", "raku", adapter_paths)
+    adapter = nt.find_native_debugger("nimala-raku-dap", adapter_paths)
+    rows.append(row("nimala-raku-dap", adapter or NOT_FOUND))
+    return rows
+
+
 def gdb_rows(adapter_paths: dict[str, str | None] | None) -> list[str]:
     """The GDB section: ``tool_rows`` for the gdb tdb would look at
     first, plus a ``gdb used instead`` row when that one is missing or
@@ -277,6 +291,7 @@ def info_text() -> str:
                 "     prepends the cache directory to the debuggee's PERL5LIB)",
             ],
         ),
+        ("Raku", raku_rows(adapters)),
         (
             "Ruby",
             tool_rows("ruby executable", "ruby", adapters)

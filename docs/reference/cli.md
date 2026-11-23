@@ -27,8 +27,8 @@ usage: tdb [-h] [-v] [-r [HOST:]PORT] [--cwd CWD] [--no-stop-on-entry]
 | `--source FILE` | Add files to the Source picker from a UTF-8 file containing one filename per line. Relative paths are resolved against the directory where `tdb` is launched. Supplements automatically discovered local Python sources. |
 | `--python PATH` | Python interpreter for the debuggee (Python targets only) |
 | `--pv` | Shorthand for --python .venv/bin/python |
-| `--lang LANGUAGE` | Debuggee language (`python`, `cpp`, `perl`); default: auto-detect from the target |
-| `--adapter ADAPTER` | Debug adapter within the language (e.g. `--lang cpp --adapter lldb-dap`), or a full path to a `gdb`/`lldb-dap`/`dlv` executable to use instead of the one on `PATH`; default: the language's standard adapter |
+| `--lang LANGUAGE` | Debuggee language (`python`, `cpp`, `perl`, `raku`, …); default: auto-detect from the target |
+| `--adapter ADAPTER` | Debug adapter within the language (e.g. `--lang cpp --adapter lldb-dap`), or a full path to a `gdb`/`lldb-dap`/`dlv`/`nimala-raku-dap` executable to use instead of the one on `PATH`; default: the language's standard adapter |
 | `--no-just-my-code` | Step into stdlib/site-packages code instead of skipping it
   (default: skipped). On uncaught exceptions, the crash modal always shows the full traceback
   including library frames, regardless of this flag. |

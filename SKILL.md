@@ -1,12 +1,13 @@
-# Skill: Interactive Debugging with tdb (Python, C/C++, Perl)
+# Skill: Interactive Debugging with tdb (Python, C/C++, Perl, Raku)
 
 Use this skill when you need to understand runtime behavior of code -- variable values, control flow, why a condition is or isn't met, what a function actually returns, or why an exception occurs. This is faster and more reliable than inserting print/logging statements.
 
 `tdb` debugs Python (via debugpy, full feature set), C/C++ or any native
 binary built with `-g` (via `gdb -i dap`, or `lldb-dap` with
-`adapter="lldb-dap"`), and Perl (via a bundled adapter driving `perl5db`,
-perl ≥ 5.18). The language is auto-detected from the target: `.py` →
-Python, ELF/Mach-O/PE executable → C/C++, `.pl`/`.pm`/`.t` → Perl.
+`adapter="lldb-dap"`), Perl (via a bundled adapter driving `perl5db`,
+perl ≥ 5.18), and Raku (via Nimala's `nimala-raku-dap`). The language is
+auto-detected from the target: `.py` → Python, ELF/Mach-O/PE executable →
+C/C++, `.pl`/`.pm`/`.t` → Perl, `.raku`/`.rakumod`/`.rakutest` → Raku.
 
 ## When to use this
 
@@ -50,14 +51,23 @@ The server owns the debug session — do not also start `tdb --headless`.
 Multi-language notes:
 - `debug_launch` auto-detects the language from `program` — pass a compiled
   binary directly (`debug_launch(program="/abs/path/prog")` debugs it via
-  GDB's DAP mode); `.pl`/`.pm`/`.t` auto-detects Perl. `lang="cpp"` /
-  `lang="perl"` forces it; `adapter="lldb-dap"` selects lldb-dap instead of
-  GDB. The `python` param is only valid for Python debuggees (errors
-  otherwise).
+  GDB's DAP mode); `.pl`/`.pm`/`.t` auto-detects Perl;
+  `.raku`/`.rakumod`/`.rakutest` auto-detects Raku. `lang="cpp"` /
+  `lang="perl"` / `lang="raku"` forces it; `adapter="lldb-dap"` selects
+  lldb-dap instead of GDB, and `adapter="/path/to/nimala-raku-dap"` names a
+  non-PATH Nimala install. The `python` param is only valid for Python
+  debuggees (errors otherwise).
 - `debug_attach` works for Perl debuggees too, not just Python — the Perl
   program must be prepared with `Devel::TdbRemote` (`use Devel::TdbRemote;`
   first line, `listen()` + `wait_for_client()`) in place of
-  `debugpy.listen()`/`wait_for_client()`. C/C++ has no attach mode.
+  `debugpy.listen()`/`wait_for_client()`. C/C++ has no attach mode, and
+  Nimala's Raku DAP server implements launch only, so Raku has no attach
+  mode either.
+- **Raku needs Nimala.** Install `nimala-raku-dap` with
+  `zef install Nimala::Raku-LSP` and put `~/.raku/bin` on PATH (or pass
+  its path as `adapter=`). Raku expression evaluation is bounded: variables,
+  attributes, indexing, and comparisons work; arbitrary method calls and
+  assignment do not.
 - **Perl stops during compilation.** A launched Perl debuggee's first stop is
   the first *compile-time* statement of the program (usually `use strict;`
   near the top), not the first runtime statement — this is what makes `BEGIN`

@@ -1,7 +1,12 @@
 """Language-specific fatal-error parsers behind Presentation.parse_error."""
 
 from tdb.languages.base import ErrorFrame
-from tdb.languages.errors import parse_perl_error, parse_python_error
+from tdb.languages.errors import (
+    parse_perl_error,
+    parse_python_error,
+    parse_raku_error,
+)
+from tdb.languages.raku import build_raku_profile
 
 SIMPLE = """Traceback (most recent call last):
   File "/app/main.py", line 12, in <module>
@@ -446,3 +451,64 @@ def test_rust_non_panic_stderr_returns_none():
 
 def test_rust_profile_wires_panic_parser():
     assert build_rust_profile().presentation.parse_error is parse_rust_error
+
+
+# --- Raku -----------------------------------------------------------------
+
+RAKU_RUNTIME = """boom
+  in sub inner at /w/deep.raku line 1
+  in sub outer at /w/deep.raku line 2
+  in block <unit> at /w/deep.raku line 3
+"""
+
+RAKU_COMPILE = """===SORRY!=== Error while compiling /w/syntax.raku
+Malformed initializer
+at /w/syntax.raku:1
+------> my $x =<HERE> ;
+"""
+
+
+def test_raku_runtime_message_and_frames_outermost_first():
+    err = parse_raku_error(RAKU_RUNTIME)
+    assert err is not None
+    assert err.header == "Raku error:"
+    assert err.message == "boom"
+    # Raku prints innermost-first; ParsedError wants outermost-first.
+    assert [(f.path, f.line, f.func) for f in err.frames] == [
+        ("/w/deep.raku", 3, "<unit>"),
+        ("/w/deep.raku", 2, "outer"),
+        ("/w/deep.raku", 1, "inner"),
+    ]
+    assert err.detail.startswith("boom\n")
+
+
+def test_raku_compile_error():
+    err = parse_raku_error(RAKU_COMPILE)
+    assert err is not None
+    assert err.header == "===SORRY!=== Error while compiling /w/syntax.raku"
+    assert err.message == "Malformed initializer"
+    assert [(f.path, f.line) for f in err.frames] == [("/w/syntax.raku", 1)]
+    assert "my $x =" in err.detail
+
+
+def test_raku_plain_output_returns_none():
+    assert parse_raku_error("hello from raku\n") is None
+    assert parse_raku_error("") is None
+
+
+def test_raku_uses_last_run_of_frames():
+    # A program may print a caught exception before dying; the modal must
+    # describe the fatal one at the end.
+    text = (
+        "caught: nope\n  in sub old at /w/old.raku line 1\n"
+        "fatal: boom\n  in sub f at /w/x.raku line 5\n"
+        "  in block <unit> at /w/x.raku line 7\n"
+    )
+    err = parse_raku_error(text)
+    assert err is not None
+    assert err.message == "fatal: boom"
+    assert [f.line for f in err.frames] == [7, 5]
+
+
+def test_raku_profile_wires_error_parser():
+    assert build_raku_profile().presentation.parse_error is parse_raku_error

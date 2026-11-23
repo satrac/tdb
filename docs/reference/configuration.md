@@ -91,7 +91,7 @@ default instead of stopping `tdb`.
 | `keybindings` | `"vim"` (default), `"emacs"`, `"default"` | Code View keybinding scheme; also set by `--keybindings` |
 | `theme` | `null` (default) or a Textual theme name such as `"textual-dark"`, `"textual-light"`, `"nord"`, `"gruvbox"`, `"dracula"`, `"monokai"`, `"tokyo-night"`, `"catppuccin-mocha"` | Color theme; the names offered under **Configure > Theme** are the valid ones, and an unknown name is ignored |
 | `step_mode` | `"statement"` (default), `"line"` | How `n`/`s` treat multi-line statements (see **Step mode** below) |
-| `adapters` | adapter id → executable path, or `null` | Where to find a debugger or interpreter instead of searching `PATH`. Ids: `gdb`, `lldb-dap`, `dlv` (debuggers); `perl`, `rdbg`, `bash`, `tcsh`, `pwsh` (interpreters `tdb` spawns); `pses` (the PowerShell Editor Services module directory); `ocamlearlybird`. Only list the ones you need |
+| `adapters` | adapter id → executable path, or `null` | Where to find a debugger or interpreter instead of searching `PATH`. Ids: `gdb`, `lldb-dap`, `dlv`, `nimala-raku-dap` (debuggers/adapters); `perl`, `raku`, `rdbg`, `bash`, `tcsh`, `pwsh` (interpreters `tdb` spawns); `pses` (the PowerShell Editor Services module directory); `ocamlearlybird`. Only list the ones you need |
 | `default_adapters` | language id → adapter id | Which adapter a language uses when `--adapter` isn't given. Languages with a choice: `cpp` and `rust` (`gdb` or `lldb-dap`), `ocaml` (`lldb-dap`, `gdb`, or `ocamlearlybird`) |
 | `logging` | `"DEBUG"` (default), `"INFO"`, `"WARNING"` (or `"WARN"`), `"ERROR"`, `"CRITICAL"`, `true`, `false` | The log file `tdb.log` (path shown by `tdb --info`): a level name writes messages at that level and above, `true` is the same as `"DEBUG"`, and `false` turns the log file off entirely. Level names are case-insensitive |
 
@@ -103,9 +103,10 @@ Adapter-related keys in `config.json`: `adapters` maps an adapter id to an
 executable path (`{"adapters": {"lldb-dap": "/opt/llvm/bin/lldb-dap"}}`), and
 `default_adapters` picks a language's default adapter
 (`{"default_adapters": {"cpp": "lldb-dap"}}`). For a one-off run,
-`--adapter /path/to/gdb` (or `lldb-dap`, `dlv`) overrides the `adapters` entry
-without editing the file; `tdb --info` reports the `gdb` and `lldb-dap`
-currently resolved (config override first, then `PATH`) with their versions.
+`--adapter /path/to/gdb` (or `lldb-dap`, `dlv`, `nimala-raku-dap`) overrides
+the `adapters` entry without editing the file; `tdb --info` reports the `gdb`
+and `lldb-dap` currently resolved (config override first, then `PATH`) with
+their versions, and where `nimala-raku-dap` is for Raku.
 
 When `tdb` creates `config.json` for the first time it seeds `adapters` with
 `gdb` and `lldb-dap` entries pointing at the executables found on `PATH`
@@ -122,6 +123,10 @@ found; it's Python code, not an external executable), so
 **PowerShell** follows the same pattern with two keys: `adapters.pwsh` names
 the interpreter and `adapters.pses` names the PowerShell Editor Services
 module directory (see [PowerShell](../languages/powershell.md)).
+
+**Raku** has two keys: `adapters.nimala-raku-dap` for the external
+`nimala-raku-dap` server from the Nimala::Raku-LSP distribution, and
+`adapters.raku` for the interpreter (see [Raku](../languages/raku.md)).
 
 Breakpoints are saved on exit and restored when debugging a program in the same
 directory. Each project's breakpoints are independent. Breakpoints set with

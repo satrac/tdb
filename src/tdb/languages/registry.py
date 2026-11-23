@@ -12,6 +12,7 @@ Detection chain (first hit wins):
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 from typing import Callable
 
@@ -81,8 +82,9 @@ def normalize_adapter(
     if adapter_id is None:
         raise LanguageNotSupportedError(
             f"--adapter {adapter!r}: an adapter given as a path must be named "
-            f"gdb, lldb-dap, or dlv (a versioned or variant name such as "
-            f"lldb-dap-21 or gdb-multiarch also works)"
+            f"gdb, lldb-dap, or dlv — or nimala-raku-dap for Raku (a "
+            f"versioned or variant name such as lldb-dap-21 or gdb-multiarch "
+            f"also works)"
         )
     exe = Path(adapter).expanduser()
     if not exe.is_file():
@@ -97,6 +99,14 @@ _EXTENSION_MAP = {
     ".pl": "perl",
     ".pm": "perl",
     ".t": "perl",
+    ".raku": "raku",
+    ".rakumod": "raku",
+    ".rakudoc": "raku",
+    ".rakutest": "raku",
+    ".p6": "raku",
+    ".pm6": "raku",
+    ".pl6": "raku",
+    ".t6": "raku",
     ".rb": "ruby",
     ".sh": "bash",
     ".bash": "bash",
@@ -145,6 +155,28 @@ _MAGIC = [
 ]
 
 
+def _is_raku_test(path: str | Path) -> bool:
+    """Whether a .t file declares Raku (shebang or `use v6`).
+
+    .t predates Raku and is still used by both Perl and Raku test
+    suites.  Only override the Perl mapping when the file itself says
+    so; a plain Perl .t (the common case in this repository's own
+    ecosystem) stays Perl.
+    """
+    try:
+        head = Path(path).read_text(encoding="utf-8", errors="replace")[:4096]
+    except OSError:
+        return False
+    lines = head.splitlines()
+    if lines and lines[0].startswith("#!"):
+        first = lines[0]
+        if "raku" in first or "perl6" in first:
+            return True
+    return any(
+        re.match(r"\s*(?:use|need)\s+v6(?:\.\w+)?\b", line) for line in lines[:20]
+    )
+
+
 def detect(program: str | None) -> str:
     """Infer the language id from the debug target.
 
@@ -163,6 +195,10 @@ def detect(program: str | None) -> str:
         )
     reject_compiled_source(program)
     ext = path.suffix.lower()
+    # .t is shared by Perl and Raku test suites; only override Perl's
+    # mapping when the file itself declares Raku.
+    if ext == ".t" and _is_raku_test(program):
+        return "raku"
     if ext in _EXTENSION_MAP:
         return _EXTENSION_MAP[ext]
 
@@ -185,6 +221,11 @@ def detect(program: str | None) -> str:
             return lang_id
     if head.startswith(b"#!") and b"python" in head.splitlines()[0]:
         return "python"
+    # perl6 is Raku's former name; check it before the generic perl match.
+    if head.startswith(b"#!") and (
+        b"raku" in head.splitlines()[0] or b"perl6" in head.splitlines()[0]
+    ):
+        return "raku"
     if head.startswith(b"#!") and b"perl" in head.splitlines()[0]:
         return "perl"
     if head.startswith(b"#!") and b"ruby" in head.splitlines()[0]:
@@ -292,3 +333,7 @@ register("go", build_go_profile)
 from tdb.languages.powershell import build_powershell_profile  # noqa: E402
 
 register("powershell", build_powershell_profile)
+
+from tdb.languages.raku import build_raku_profile  # noqa: E402
+
+register("raku", build_raku_profile)

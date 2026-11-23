@@ -6,8 +6,8 @@ Two consumers:
 * ``tdb --info`` (``tdb.info``) reports where each one lives and what
   version it is; the same find + ``--version`` probe serves the
   interpreters tdb spawns (perl, ruby, bash, ...).
-* ``--adapter /full/path/to/{gdb,lldb-dap,dlv}`` — the registry maps
-  the path's basename back to an adapter id
+* ``--adapter /full/path/to/{gdb,lldb-dap,dlv,nimala-raku-dap}`` — the
+  registry maps the path's basename back to an adapter id
   (``adapter_id_for_executable``) so the explicit executable wins over
   anything on ``$PATH`` or in ``config.json``.
 """
@@ -24,7 +24,7 @@ from pathlib import PureWindowsPath
 # Adapters `--adapter` accepts as an executable path. Order matters for
 # prefix matching only in that no id is a prefix of another; listed
 # longest-first anyway for safety.
-PATH_ADAPTER_IDS: tuple[str, ...] = ("lldb-dap", "gdb", "dlv")
+PATH_ADAPTER_IDS: tuple[str, ...] = ("nimala-raku-dap", "lldb-dap", "gdb", "dlv")
 
 # The native debuggers `tdb --info` reports on.
 NATIVE_ADAPTER_IDS: tuple[str, ...] = ("gdb", "lldb-dap")

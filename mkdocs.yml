@@ -74,6 +74,7 @@ nav:
       - C, C++, and Fortran: languages/c-cpp-fortran.md
       - Rust: languages/rust.md
       - Perl: languages/perl.md
+      - Raku: languages/raku.md
       - Bash: languages/bash.md
       - Tcsh: languages/tcsh.md
       - Ruby: languages/ruby.md

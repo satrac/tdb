@@ -615,6 +615,125 @@ def _ps_is_launcher_block(path: str) -> bool:
     return path.replace("\\", "/").rsplit("/", 1)[-1] == PS_LAUNCHER_NAME
 
 
+# --- Raku ------------------------------------------------------------------
+#
+# An uncaught runtime exception ends with one or more call-frame lines,
+# innermost first, each two-space indented:
+#
+#   boom
+#     in sub f at die.raku line 1
+#     in block <unit> at die.raku line 2
+#
+# A compile error is introduced by ===SORRY!=== and locates the offending
+# line as `at path:line`:
+#
+#   ===SORRY!=== Error while compiling /tmp/x.raku
+#   Malformed initializer
+#   at /tmp/x.raku:1
+#   ------> my $x =<HERE> ;
+_RAKU_COMPILE_RE = re.compile(r"^===SORRY!===.*$", re.MULTILINE)
+_RAKU_FRAME_RE = re.compile(
+    r"^\s+in (?P<label>.+?) at (?P<path>.+?) line (?P<line>\d+)[ \t]*$",
+    re.MULTILINE,
+)
+_RAKU_COMPILE_LOC_RE = re.compile(
+    r"^at (?P<path>.+):(?P<line>\d+)[ \t]*$", re.MULTILINE
+)
+
+_RAKU_FRAME_PREFIXES = (
+    "anon sub ",
+    "method ",
+    "block ",
+    "sub ",
+    "regex ",
+    "token ",
+    "rule ",
+)
+
+
+def _raku_frame_name(label: str) -> str:
+    for prefix in _RAKU_FRAME_PREFIXES:
+        if label.startswith(prefix):
+            return label[len(prefix) :]
+    return label
+
+
+def _parse_raku_compile_error(stderr: str, start: int) -> ParsedError:
+    tail = stderr[start:].rstrip()
+    lines = tail.splitlines()
+    header = lines[0].strip()
+    message = ""
+    for line in lines[1:]:
+        text = line.strip()
+        if text and not text.startswith("at "):
+            message = text
+            break
+    frames = [
+        ErrorFrame(
+            path=m.group("path"), line=int(m.group("line")), func=""
+        )
+        for m in _RAKU_COMPILE_LOC_RE.finditer(tail)
+    ]
+    header_end = tail.index("\n") + 1 if "\n" in tail else len(tail)
+    return ParsedError(
+        header=header,
+        message=message,
+        frames=frames,
+        detail=tail[header_end:].rstrip(),
+    )
+
+
+def parse_raku_error(stderr: str, exit_code: int | None = None) -> ParsedError | None:
+    """Parse a fatal Raku runtime error or compile error from stderr.
+
+    ``exit_code`` is accepted for signature parity with the other parsers
+    and ignored: both the ``===SORRY!===`` compile header and a trailing
+    run of ``in ... at FILE line N`` runtime frames are unambiguous
+    signals.  Runtime frames are printed innermost-first and are
+    reordered to ParsedError's OUTERMOST-first convention.
+    """
+    compile_matches = list(_RAKU_COMPILE_RE.finditer(stderr))
+    if compile_matches:
+        return _parse_raku_compile_error(stderr, compile_matches[-1].start())
+
+    frame_matches = list(_RAKU_FRAME_RE.finditer(stderr))
+    if not frame_matches:
+        return None
+
+    # Raku prints the message, then all frames.  Anchor on the last run of
+    # adjacent frame lines so an earlier warning (or a caught exception
+    # printed by the program) cannot become the modal's subject.
+    run = [frame_matches[-1]]
+    for m in reversed(frame_matches[:-1]):
+        if m.end() == run[0].start() - 1:  # separated by one newline
+            run.insert(0, m)
+        else:
+            break
+    start = run[0].start()
+
+    # The message is the line immediately before the frame run.
+    before = stderr[:start].rstrip("\n")
+    msg_start = before.rfind("\n") + 1
+    message = before[msg_start:].strip()
+    if not message:
+        return None
+
+    frames = [
+        ErrorFrame(
+            path=m.group("path"),
+            line=int(m.group("line")),
+            func=_raku_frame_name(m.group("label")),
+        )
+        for m in run
+    ]
+    frames.reverse()  # innermost-first -> outermost-first
+
+    detail = stderr[msg_start:].rstrip()
+    return ParsedError(
+        header="Raku error:", message=message, frames=frames, detail=detail
+    )
+
+
 def parse_powershell_error(
     stderr: str, exit_code: int | None = None
 ) -> ParsedError | None:

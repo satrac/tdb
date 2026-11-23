@@ -968,6 +968,7 @@ def test_info_main_prints_sections_and_about(capsys, monkeypatch):
         "GDB",
         "lldb-dap",
         "Perl",
+        "Raku",
         "Ruby",
         "Go",
         "OCaml",

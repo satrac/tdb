@@ -10,8 +10,8 @@ tdb --terminal xterm my_tui_app.py
 ```
 
 `--terminal` works for every language `tdb` can *launch* (as opposed to
-attach to): Python, Perl, Bash, Tcsh, Ruby, and C/C++/Fortran or native OCaml
-sessions via `--adapter lldb-dap`. Neither `gdb -i dap` (the default C/C++/Fortran
+attach to): Python, Perl, Raku, Bash, Tcsh, Ruby, and C/C++/Fortran or native
+OCaml sessions via `--adapter lldb-dap`. Neither `gdb -i dap` (the default C/C++/Fortran
 adapter, and an alternate for native OCaml) nor `ocamlearlybird` (the
 bytecode OCaml adapter) has any terminal integration -- `tdb` rejects
 `--terminal` up front for both, with an error pointing at `--adapter
